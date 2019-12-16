@@ -3,39 +3,39 @@ use std::io::BufReader;
 use std::io::prelude::*;
 
 struct Machine {
-    pos: usize,
+    ptr: usize,
     end: bool,
-    tape: Vec<usize>,
+    mem: Vec<usize>,
 }
 
 impl Machine {
-    fn new(tape: Vec<usize>) -> Machine {
+    fn new(mem: Vec<usize>) -> Machine {
         Machine {
-            pos: 0,
+            ptr: 0,
             end: false,
-            tape: tape,
+            mem: mem,
         }
     }
 
     fn next_op(&mut self) {
-        let op_code = self.tape[self.pos];
+        let op_code = self.mem[self.ptr];
         match op_code {
             1 =>{
-                let fst_arg = self.tape[self.pos+1];
-                let snd_arg = self.tape[self.pos+2];
-                let dest = self.tape[self.pos+3];
-                self.tape[dest] = self.tape[fst_arg] + self.tape[snd_arg];
+                let fst_arg = self.mem[self.ptr+1];
+                let snd_arg = self.mem[self.ptr+2];
+                let dest = self.mem[self.ptr+3];
+                self.mem[dest] = self.mem[fst_arg] + self.mem[snd_arg];
             },
             2 => {
-                let fst_arg = self.tape[self.pos+1];
-                let snd_arg = self.tape[self.pos+2];
-                let dest = self.tape[self.pos+3];
-                self.tape[dest] = self.tape[fst_arg] * self.tape[snd_arg];
+                let fst_arg = self.mem[self.ptr+1];
+                let snd_arg = self.mem[self.ptr+2];
+                let dest = self.mem[self.ptr+3];
+                self.mem[dest] = self.mem[fst_arg] * self.mem[snd_arg];
             },
             99 => self.end = true,
             _ => (),
         }
-        self.pos += 4;
+        self.ptr += 4;
     }
 }
 
@@ -44,16 +44,38 @@ fn main() {
     let mut reader = BufReader::new(file);
     let mut contents = String::new();
     reader.read_to_string(&mut contents).unwrap();
-    let mut tape: Vec<usize> = contents
+    let mem: Vec<usize> = contents
         .split(',')
         .filter_map(|x| x.parse::<usize>().ok())
         .collect();
 
-    tape[1] = 12;
-    tape[2] = 2;
-    let mut machine = Machine::new(tape);
+    let mut memory = mem.to_vec();
+    memory[1] = 12;
+    memory[2] = 2;
+    let mut machine = Machine::new(memory);
     while !machine.end {
         machine.next_op();
     }
-    println!("Machine position zero: {}", machine.tape[0]);
+    println!("Machine position zero: {}", machine.mem[0]);
+
+    let answer = 19690720;
+
+    for i in 0..101 {
+        for j in 0..101 {
+            let mut memory = mem.to_vec();
+            memory[1] = i;
+            memory[2] = j;
+            let mut mchn = Machine::new(memory);
+            while !mchn.end {
+                mchn.next_op();
+            }
+            if mchn.mem[0] == answer {
+                println!("100 * {} + {} = {}", i, j, 100 * i + j);
+                println!("Output: {}", mchn.mem[0]);
+                break;
+            }
+        }
+    }
+
+    
 }
