@@ -37,6 +37,19 @@ impl Machine {
         }
         self.ptr += 4;
     }
+
+    fn run(&mut self, fst: usize, snd: usize) -> usize {
+        self.mem[1] = fst;
+        self.mem[2] = snd;
+
+        loop {
+            self.next_op();
+            if self.end {
+                break;
+            }
+        }
+        self.mem[0] 
+    }
 }
 
 fn main() {
@@ -49,26 +62,16 @@ fn main() {
         .filter_map(|x| x.parse::<usize>().ok())
         .collect();
 
-    let mut memory = mem.to_vec();
-    memory[1] = 12;
-    memory[2] = 2;
-    let mut machine = Machine::new(memory);
-    while !machine.end {
-        machine.next_op();
-    }
+    let mut machine = Machine::new(mem.to_vec());
+    machine.run(12, 2);
     println!("Machine position zero: {}", machine.mem[0]);
 
     let answer = 19690720;
 
     for i in 0..101 {
         for j in 0..101 {
-            let mut memory = mem.to_vec();
-            memory[1] = i;
-            memory[2] = j;
-            let mut mchn = Machine::new(memory);
-            while !mchn.end {
-                mchn.next_op();
-            }
+            let mut mchn = Machine::new(mem.to_vec());
+            mchn.run(i, j);
             if mchn.mem[0] == answer {
                 println!("100 * {} + {} = {}", i, j, 100 * i + j);
                 println!("Output: {}", mchn.mem[0]);
@@ -76,6 +79,4 @@ fn main() {
             }
         }
     }
-
-    
 }
